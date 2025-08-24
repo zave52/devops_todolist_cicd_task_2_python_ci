@@ -37,12 +37,10 @@ jobs:
 
       - name: Check code style with flake8
         run: |
-          cd ../
           flake8 . --show-source --statistics --exit-zero
 
       - name: Check complexity of the code
         run: |
-          cd ../
           flake8 . --max-complexity=10 --statistics --exit-zero
 
       - name: Run tests
