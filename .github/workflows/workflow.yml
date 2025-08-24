@@ -1,0 +1,64 @@
+name: CI
+run-name: The workflow was triggered by ${{ github.actor }} with commit hash ${{ github.sha }}
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+
+env:
+  PYTHON_VERSION: 3.13
+
+jobs:
+  python-ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8 coverage
+
+      - name: Check code style with flake8
+        run: |
+          cd ../
+          flake8 . --show-source --statistics --exit-zero
+
+      - name: Check complexity of the code
+        run: |
+          cd ../
+          flake8 . --max-complexity=10 --statistics --exit-zero
+
+      - name: Run tests
+        run: |
+          python manage.py test
+
+      - name: Run tests with coverage
+        run: |
+          coverage run manage.py test
+
+      - name: Display coverage report
+        run: |
+          coverage report -m
+
+      - name: Upload Python code as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: django_todo_app
+          path: .
